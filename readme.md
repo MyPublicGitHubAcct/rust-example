@@ -55,6 +55,7 @@ This list will now include
 rust-std-thumbv7em-none-eabi (installed)
 ```
 
+
 ## Example Project
 
 Create the project as you would any other Rust project.
@@ -71,6 +72,7 @@ Additionally, ```#[panic_handler]``` is missing, so this is considered unsafe Ru
 
 To be able to generate an ELF file, we need to do several things
 
+
 ### No Standard Library
 
 To tell the compiler to not use the std, put the following attribute before ```
@@ -82,17 +84,12 @@ main()```.
 
 _Attributes_ in Rust provide instructions and metadata to the compiler. This includes controlling conditional compilation, deriving traits, managing test cases, etc. Details can be found [here](https://doc.rust-lang.org/reference/attributes.html).
 
+
 ### The Loop
 
 An infinite _loop_ is needed to run program(s) on hardware with no OS. Rust has one built into the core language, which can only be stopped by _break_, _return_, or an _error/panic_. This could be done like:
 
-```rust
-fn main() {
-    loop {}
-}
-```
-
-However, given the target we cannot use the Rust default ```main()``` as it relies upon std. Use of ```#![no_main]``` cures this and allows the definition of a custom entry point.
+Given the target we cannot use the Rust default ```main()``` as it relies upon std. Use of ```#![no_main]``` cures this and allows the definition of a custom entry point.
 
 To avoid potential linking problems due to name mangling, the ```#[no_mangle]``` item level attribute should be used.
 
@@ -117,6 +114,9 @@ fn panic_handler(_info: &PanicInfo) -> ! {
 }
 ```
 
+__Note__: The never type, ```!``` represents a computation that will never resolve to a value or return control to a function's caller. This is often used for panic.
+
+
 ### Checking and Building
 
 The code above will not compile using MacOS as the target, but will using Cortex-M4.
@@ -135,7 +135,7 @@ cargo build --target thumbv7em-none-eabi
 
 The ELF file, in this examples, can be found here - ```/Volumes/SomeDrive/SourceCode/rust-example/target/thumbv7em-none-eabi/debug/rust-example```.
 
-To avoid the need to use the ```--target``` flag each time, make a top-level directory called ```.cargo``` and add a file named _config.toml_. In that file, add the following:
+To avoid the need to use the ```--target``` flag each time, make a top-level directory called __.cargo__ and add a file named _config.toml_. In that file, add the following:
 
 ```zsh
 [build]
@@ -148,4 +148,36 @@ Now, commands like the following can be used without stating the target.
 cargo check
 cargo build
 cargo clean
+```
+
+### The ELF file
+
+An ELF file includes the following:
+
+- ELF Header = metadata about the file
+- Program header = information about the segments that need to be loaded
+- Sections (programs):
+  - .text   = executable code
+  - .data   = initialized data
+  - .bss    = uninitialized data (typically empty)
+  - .rodata = read-only data
+- Sections (debugging information):
+  - .symtab = symbol table
+  - .strtab = string table
+- Section header table = describes sections within the file
+
+Additional sections can be added with the linker (which is scripted).
+
+Cargo includes tools that can be used to inspect an ELF file. To install these, use:
+
+```zsh
+cargo install cargo-binutils
+rustup component add llvm-tools
+```
+
+Now, the following commands can be used...
+
+```zsh
+cargo objdump -- -h <elf file> # Overview of the sections in the ELF.
+cargo readobj -- -S <elf file> # Information about each section of the ELF.
 ```
