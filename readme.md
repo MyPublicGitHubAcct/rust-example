@@ -2,11 +2,61 @@
 
 This is intended to run on STM32F4 hardware.
 
+## Resources
+
+- [Rust book](https://doc.rust-lang.org/stable/book/) shows the basics of the Rust language, from the developer.
+- [Cargo book](https://doc.rust-lang.org/cargo/print.html) is helpful to understand working with Rust.
+- [Rust embedded book](https://docs.rust-embedded.org/book/intro/index.html)
+- [Rust by Example](https://doc.rust-lang.org/rust-by-example/) is set of examples.
+- [Rustlings](https://rustlings.rust-lang.org) is a library used for learning the Rust language.
+- [Rust Design Patterns](https://rust-unofficial.github.io/patterns/intro.html) is a list of design patterns intended to provide standard ways of accomplishing common tasks.
+- [Embassy framework](https://github.com/embassy-rs/embassy) for embedded, but not used here.
+
 ## Installing Rust for STM32
 
 Though most activities will be done via [cargo](https://doc.rust-lang.org/nightly/cargo/), the [rustc book](https://doc.rust-lang.org/nightly/rustc/) includes a section on [platform support](https://doc.rust-lang.org/nightly/rustc/platform-support.html).
 
-To see the list of targets STM32 supports on Rust, use this command:
+### Download & run the script that installs the rustup tool
+
+This will install cargo, clippy, rust-docs, rust-std, rustc, and rustfmt.
+
+```zsh
+curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+```
+
+### Check the compiler version
+
+```zsh
+rustc --version
+```
+
+### Update Rust
+
+```zsh
+rustup update
+```
+
+### Uninstall Rust
+
+```zsh
+rustup self uninstall
+```
+
+### Install Cargo tools that can be used to inspect an ELF file
+
+```zsh
+cargo install cargo-binutils
+rustup component add llvm-tools
+```
+
+Now, the following commands can be used...
+
+```zsh
+cargo objdump -- -h <elf file> # Overview of the sections in the ELF.
+cargo readobj -- -S <elf file> # Information about each section of the ELF.
+```
+
+### Show the list of targets STM32 supports on Rust
 
 ```rust
 rustup target list
@@ -119,7 +169,7 @@ __Note__: The never type, ```!``` represents a computation that will never resol
 
 ### Checking and Building
 
-The code above will not compile using MacOS as the target, but will using Cortex-M4.
+The code above will not compile to an ELF using MacOS as the target, but will using a different target. Cortex-M4 and Cortex-M7 are both in the Armv7E-M architecture family. _thumbv7em-none-eabi_, and _thumbv7em-none-eabihf_ are appropriate targets for this family. The latter is the same as the former except that it includes _hardware_ floating point support.
 
 To check for errors, use the ```--target``` flag.
 
@@ -148,6 +198,8 @@ Now, commands like the following can be used without stating the target.
 cargo check
 cargo build
 cargo clean
+cargo fmt
+cargo clippy
 ```
 
 ### The ELF file
@@ -167,17 +219,3 @@ An ELF file includes the following:
 - Section header table = describes sections within the file
 
 Additional sections can be added with the linker (which is scripted).
-
-Cargo includes tools that can be used to inspect an ELF file. To install these, use:
-
-```zsh
-cargo install cargo-binutils
-rustup component add llvm-tools
-```
-
-Now, the following commands can be used...
-
-```zsh
-cargo objdump -- -h <elf file> # Overview of the sections in the ELF.
-cargo readobj -- -S <elf file> # Information about each section of the ELF.
-```
