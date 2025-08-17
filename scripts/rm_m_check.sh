@@ -1,4 +1,6 @@
  #!/bin/bash
-echo "Removing files"
+echo "-- rm -rf check/ & cargo clean --"
+echo "================================="
+
 rm -rf check/
 cargo clean
